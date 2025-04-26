@@ -1,11 +1,5 @@
 import React, { Suspense } from "react";
-import {
-  BrowserRouter,
-  createBrowserRouter,
-  Route,
-  RouterProvider,
-  Routes,
-} from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import MainLayout from "./components/MainLayout";
 import Home from "./screens/Home";
 import Login from "./screens/Login";
@@ -14,43 +8,52 @@ import PageNotFound from "./screens/PageNotFound";
 
 function App() {
   const user = useSelector((state) => state.auth.user);
-  console.log(user);
-  const Screen = ({ Name }) => {
-    return (
-      <Suspense
-        fallback={
-          <img src="/images/logo.png" alt="loading" className="h-20 w-20" />
-        }
-      >
-        <Name />
-      </Suspense>
-    );
+
+  const allRoutes = {
+    protectedRoutes: [
+      {
+        path: "/",
+        element: MainLayout,
+        children: [{ path: "", element: Home }],
+      },
+      {
+        path: "*",
+        element: PageNotFound,
+      },
+    ],
+    publicRoutes: [
+      {
+        path: "/",
+        element: Login,
+      },
+      {
+        path: "*",
+        element: PageNotFound,
+      },
+    ],
   };
 
-  const protectedRoutes = [
-    {
-      path: "/",
-      element: <Screen Name={MainLayout} />,
-      children: [{ path: "", element: <Screen Name={Home} /> }],
-    },
-    {
-      path: "*",
-      element: <Screen Name={PageNotFound} />,
-    },
-  ];
+  const getRoutes = (routes) => {
+    return routes.map(({ path, element: Element, children }) => ({
+      path,
+      element: (
+        <Suspense
+          fallback={
+            <img src="/images/logo.png" alt="loading" className="h-20 w-20" />
+          }
+        >
+          <Element />
+        </Suspense>
+      ),
+      children: children ? getRoutes(children) : undefined,
+    }));
+  };
 
-  const routes = [
-    {
-      path: "/",
-      element: <Screen Name={Login} />,
-    },
-    {
-      path: "*",
-      element: <Screen Name={PageNotFound} />,
-    },
-  ];
-
-  const router = createBrowserRouter(!user ? routes : protectedRoutes);
+  const router = createBrowserRouter(
+    user
+      ? getRoutes(allRoutes.protectedRoutes)
+      : getRoutes(allRoutes.publicRoutes)
+  );
 
   return <RouterProvider router={router} />;
 }
