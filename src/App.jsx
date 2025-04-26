@@ -9,31 +9,30 @@ import PageNotFound from "./screens/PageNotFound";
 function App() {
   const user = useSelector((state) => state.auth.user);
 
-  const allRoutes = {
-    protectedRoutes: [
-      {
-        path: "/",
-        element: MainLayout,
-        children: [{ path: "", element: Home }],
-      },
-      {
-        path: "*",
-        element: PageNotFound,
-      },
-    ],
-    publicRoutes: [
-      {
-        path: "/",
-        element: Login,
-      },
-      {
-        path: "*",
-        element: PageNotFound,
-      },
-    ],
-  };
+  const protectedRoutes = [
+    {
+      path: "/",
+      element: MainLayout,
+      children: [{ path: "", element: Home }],
+    },
+    {
+      path: "*",
+      element: PageNotFound,
+    },
+  ];
 
-  const getRoutes = (routes) => {
+  const publicRoutes = [
+    {
+      path: "/",
+      element: Login,
+    },
+    {
+      path: "*",
+      element: PageNotFound,
+    },
+  ];
+
+  const allRoutes = (routes) => {
     return routes.map(({ path, element: Element, children }) => ({
       path,
       element: (
@@ -45,14 +44,12 @@ function App() {
           <Element />
         </Suspense>
       ),
-      children: children ? getRoutes(children) : undefined,
+      children: children ? allRoutes(children) : undefined,
     }));
   };
 
   const router = createBrowserRouter(
-    user
-      ? getRoutes(allRoutes.protectedRoutes)
-      : getRoutes(allRoutes.publicRoutes)
+    user ? allRoutes(protectedRoutes) : allRoutes(publicRoutes)
   );
 
   return <RouterProvider router={router} />;
