@@ -9,32 +9,49 @@ import {
 import MainLayout from "./components/MainLayout";
 import Home from "./screens/Home";
 import Login from "./screens/Login";
-
-const Screen = ({ name }) => {
-  return (
-    <Suspense
-      fallback={
-        <image src="/images/logo.png" alt="loading" className="h-20 w-20" />
-      }
-    >
-      {name}
-    </Suspense>
-  );
-};
-
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Screen name={<MainLayout />} />,
-    children: [{ path: "", element: <Screen name={<Home />} /> }],
-  },
-  {
-    path: "/login",
-    element: <Screen name={<Login />} />,
-  },
-]);
+import { useSelector } from "react-redux";
+import PageNotFound from "./screens/PageNotFound";
 
 function App() {
+  const user = useSelector((state) => state.auth.user);
+  console.log(user);
+  const Screen = ({ Name }) => {
+    return (
+      <Suspense
+        fallback={
+          <img src="/images/logo.png" alt="loading" className="h-20 w-20" />
+        }
+      >
+        <Name />
+      </Suspense>
+    );
+  };
+
+  const protectedRoutes = [
+    {
+      path: "/",
+      element: <Screen Name={MainLayout} />,
+      children: [{ path: "", element: <Screen Name={Home} /> }],
+    },
+    {
+      path: "*",
+      element: <Screen Name={PageNotFound} />,
+    },
+  ];
+
+  const routes = [
+    {
+      path: "/",
+      element: <Screen Name={Login} />,
+    },
+    {
+      path: "*",
+      element: <Screen Name={PageNotFound} />,
+    },
+  ];
+
+  const router = createBrowserRouter(!user ? routes : protectedRoutes);
+
   return <RouterProvider router={router} />;
 }
 
