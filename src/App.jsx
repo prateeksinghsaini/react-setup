@@ -52,7 +52,7 @@ function App() {
     user ? allRoutes(protectedRoutes) : allRoutes(publicRoutes)
   );
 
-  return <RouterProvider router={router} />;
+  return <RouterProvider router={router} key={user ? "auth" : "guest"} />;
 }
 
 export default App;
