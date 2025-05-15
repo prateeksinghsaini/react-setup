@@ -7,16 +7,17 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "postinstall": "flowbite-react patch"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.7.0",
     "axios": "^1.9.0",
     "formik": "^2.4.6",
-    "motion": "^12.9.2",
-    "react": "file:",
-    "react-dom": "^19.0.0",
+    "lucide-react": "^0.510.0",
+    "motion": "^12.11.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-hot-toast": "^2.5.2",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.5.2",
     "redux-persist": "^6.0.0"

@@ -1,4 +1,4 @@
-import React, { Suspense, useRef } from "react";
+import React, { Suspense, useCallback, useMemo, useRef } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import MainLayout from "./components/MainLayout";
 import Home from "./screens/Home";
@@ -6,13 +6,14 @@ import Login from "./screens/Login";
 import { useSelector } from "react-redux";
 import PageNotFound from "./screens/PageNotFound";
 import Circle from "./components/Circle";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   const user = useSelector((state) => state.auth.user);
   const rootRef = useRef();
   const mRef = useRef();
 
-  const protectedRoutes = [
+  const protectedRoutes = useMemo(() => [
     {
       path: "/",
       element: MainLayout,
@@ -22,9 +23,9 @@ function App() {
       path: "*",
       element: PageNotFound,
     },
-  ];
+  ], []);
 
-  const publicRoutes = [
+  const publicRoutes = useMemo(() => [
     {
       path: "/",
       element: Login,
@@ -33,9 +34,9 @@ function App() {
       path: "*",
       element: PageNotFound,
     },
-  ];
+  ], []);
 
-  const allRoutes = (routes) => {
+  const wrapRoutes = useCallback((routes) => {
     return routes.map(({ path, element: Element, children }) => ({
       path,
       element: (
@@ -47,26 +48,31 @@ function App() {
           <Element />
         </Suspense>
       ),
-      children: children ? allRoutes(children) : undefined,
+      children: children ? wrapRoutes(children) : undefined,
     }));
-  };
+  }, []);
 
-  const router = createBrowserRouter(
-    user ? allRoutes(protectedRoutes) : allRoutes(publicRoutes)
-  );
+  const router = useMemo(() => {
+    return createBrowserRouter(
+      user ? wrapRoutes(protectedRoutes) : wrapRoutes(publicRoutes)
+    );
+  }, [user, protectedRoutes, publicRoutes, wrapRoutes]);
 
-  const handleMouse = (e) => {
+  const handleMouse = useCallback((e) => {
     const circle = mRef.current;
-    setTimeout(() => {
-      circle.style.left = `${e.clientX + 10}px`;
-      circle.style.top = `${e.clientY - 10}px`;
-    }, 20);
-  };
+    if (circle) {
+      setTimeout(() => {
+        circle.style.left = `${e.clientX + 10}px`;
+        circle.style.top = `${e.clientY - 10}px`;
+      }, 20);
+    }
+  }, []);
 
   return (
-    <div ref={rootRef} onMouseMove={handleMouse} className="relative">
+    <div ref={rootRef} onMouseMove={handleMouse} className="relative overflow-hidden">
       <Circle ref={mRef} />
       <RouterProvider router={router} key={user ? "auth" : "guest"} />
+      <Toaster />
     </div>
   );
 }
